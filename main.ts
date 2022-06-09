@@ -1,9 +1,9 @@
-let arr: any[] = [];
-for (let i = -50000; i < 50000; i++) {
-    arr.push(i);
+let array: any[] = [];
+for (let i = -100000; i < 100000; i++) {
+    array.push(i);
 }
 
-arr = arr
+array = array
   .map(value => ({ value, sort: Math.random() }))
   .sort((a, b) => a.sort - b.sort)
   .map(({ value }) => value)
@@ -32,31 +32,47 @@ function selectionSort(arr: any[]): any[] {
             }
         }
 
-        const temp = arr[largestIndex];
-        arr[largestIndex] = arr[lastUnsorted];
-        arr[lastUnsorted] = temp;
+        if (largestIndex !== lastUnsorted) {
+            const temp = arr[largestIndex];
+            arr[largestIndex] = arr[lastUnsorted];
+            arr[lastUnsorted] = temp;
+        }
     }
 
     return arr;
 }
 
-function sort(algorithm: (arr: any[]) => any[], name: string): any[] {
-    if (name) {
-        console.log('running ' + name + ' sort algorithm');
+function insertionSort(arr: any[]): any[] {
+    for (let lastUnsorted = 1; lastUnsorted < arr.length; lastUnsorted++) {
+        let temp = arr[lastUnsorted];
+        let i;
+        for (i = lastUnsorted - 1; i >= 0 && arr[i] > temp; i--) {
+            arr[i + 1] = arr[i];
+        }
+
+        arr[i] = temp;
     }
 
-    const array = JSON.parse(JSON.stringify(arr));
+    return arr;
+}
 
+async function sort(algorithm: (arr: any[]) => any[], name: string): Promise<any[]> {
+    const cloneArray = JSON.parse(JSON.stringify(array));
     const start = Date.now();
-
-    const result = algorithm(array);
-
+    const result = algorithm(cloneArray);
     console.log(name + ' sort algorithm runs in ' + (Date.now() - start) + 'ms');
-
     return result;
 }
 
-const bubbleSortResult = sort(bubbleSort, 'bubble');
-const selectionSortResult = sort(selectionSort, 'selection');
+Promise.all([sort(bubbleSort, 'bubble'), sort(selectionSort, 'selection'), sort(insertionSort, 'insertion')]).then(results => {
+    const values = results.map(result => result.join(','));
+    let allMatched = true;
+    for (let i = 0; i < values.length - 2; i++) {
+        allMatched = values[i] === values[i+1];
+        if (!allMatched) {
+            break;
+        }
+    }
 
-console.log('all have same result: ' + (bubbleSortResult.join(',') === selectionSortResult.join(',')));
+    console.log('all have same result: ' + allMatched);
+});
